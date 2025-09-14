@@ -1,0 +1,105 @@
+/* Icon Bubble Styles */
+
+.icon-bubble {
+  position: absolute;
+  z-index: 1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.icon-bubble-inner {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 255, 136, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.icon-bubble:hover .icon-bubble-inner {
+  background: rgba(0, 255, 136, 0.05);
+  border-color: rgba(0, 255, 136, 0.3);
+  box-shadow: 
+    0 8px 25px rgba(0, 255, 136, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 20px rgba(0, 255, 136, 0.1);
+}
+
+.icon-bubble-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bubble-icon {
+  color: rgba(0, 255, 136, 0.7);
+  transition: color 0.3s ease;
+}
+
+.icon-bubble:hover .bubble-icon {
+  color: rgba(0, 255, 136, 0.9);
+}
+
+/* Responsive sizes */
+@media (max-width: 768px) {
+  .icon-bubble-inner {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .bubble-icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Mobile positioning adjustments to avoid content */
+  .icon-bubbles-container .bubble-0 { /* Tally */
+    transform: translate(-10px, 5px) !important;
+  }
+  
+  .icon-bubbles-container .bubble-1 { /* Excel */
+    transform: translate(10px, -5px) !important;
+  }
+  
+  .icon-bubbles-container .bubble-2 { /* GST */
+    transform: translate(-5px, 15px) !important;
+  }
+  
+  .icon-bubbles-container .bubble-6 { /* ITR */
+    transform: translate(5px, 10px) !important;
+  }
+  
+  .icon-bubbles-container .bubble-8 { /* AI */
+    transform: translate(-15px, 5px) !important;
+  }
+}
+
+/* Animation keyframes */
+@keyframes bubble-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.icon-bubble.floating {
+  animation: bubble-float 3s ease-in-out infinite;
+}
+
+/* Performance optimizations */
+.icon-bubble {
+  will-change: transform, opacity;
+}
+
+.icon-bubble-inner {
+  will-change: background-color, border-color, box-shadow;
+}

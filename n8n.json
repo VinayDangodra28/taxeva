@@ -1,0 +1,485 @@
+{
+  "name": "TaxEva AI Sales Agent - Email Outreach",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a8f7c9e1-2b3d-4e5f-6789-0abc1def2345",
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "readRange",
+        "sheetId": "YOUR_GOOGLE_SHEET_ID",
+        "range": "Sheet1!A2:F",
+        "options": {
+          "returnAllMatches": true,
+          "continue": true
+        }
+      },
+      "id": "b9e8d7c6-5a4b-3c2d-1e0f-9abc8def7654",
+      "name": "Google Sheets - Get Prospects",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [450, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"email_status\"]}}",
+              "operation": "notEqual",
+              "value2": "sent"
+            }
+          ]
+        }
+      },
+      "id": "c7f6e5d4-3b2a-1c9d-8e7f-6abc5def4321",
+      "name": "Filter - Unsent Email Prospects",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "send",
+        "to": "={{$json[\"email\"]}}",
+        "subject": "Transform Your CA Practice with AI - Save 40% Time | TaxEva",
+        "message": "<p>Dear {{$json[\"name\"]}},</p><p>I hope this email finds you well. I'm Raj from TaxEva, and I'm reaching out because we've been helping CA firms like yours transform their operations with AI.</p><p><strong>Here's what caught my attention about your practice:</strong></p><p>Many CA firms struggle with:</p><ul><li>Managing multiple software platforms</li><li>Repetitive administrative tasks</li><li>Time-consuming client communications</li><li>Manual data entry and processing</li></ul><p><strong>TaxEva has already helped 50+ CA firms:</strong></p><ul><li>✅ Save 40% of operational time</li><li>✅ Eliminate tab-switching between software</li><li>✅ Automate repetitive tasks</li><li>✅ Streamline entire workflow with AI</li></ul><p>Our founders have worked directly in CA firms and understand your pain points intimately.</p><p>Would you be interested in a quick 15-minute demo to see how TaxEva can specifically help {{$json[\"company\"]}}? I can show you:</p><ul><li>How we've helped similar firms reduce manual work</li><li>Live demo of our AI-powered automation</li><li>Custom solutions for your specific needs</li></ul><p>I have a few slots available this week - would {{DateTime.fromISO(DateTime.now().plus({days: 2}).toISODate()).toFormat('EEEE, MMMM d')}} or {{DateTime.fromISO(DateTime.now().plus({days: 3}).toISODate()).toFormat('EEEE, MMMM d')}} work for you?</p><p>Best regards,<br><strong>Raj Sharma</strong><br>Senior Business Development Executive<br>TaxEva - AI for CA Firms<br>📧 raj@taxeva.ai<br>📱 +91-98765-43210</p><p>P.S. Reply with 'DEMO' and I'll send you a calendar link to pick a time that works for you!</p>",
+        "options": {
+          "htmlEmail": true
+        }
+      },
+      "id": "d8e7f6c5-4a3b-2c1d-9e8f-7abc6def5432",
+      "name": "Gmail - Send Initial Outreach",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [850, 300],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetId": "YOUR_GOOGLE_SHEET_ID",
+        "range": "EmailLogs!A:E",
+        "options": {
+          "valueInputMode": "USER_ENTERED"
+        },
+        "dataMode": "autoMapInputData",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "timestamp",
+              "fieldValue": "={{new Date().toISOString()}}"
+            },
+            {
+              "fieldName": "prospect_name",
+              "fieldValue": "={{$json[\"name\"]}}"
+            },
+            {
+              "fieldName": "email_address",
+              "fieldValue": "={{$json[\"email\"]}}"
+            },
+            {
+              "fieldName": "company",
+              "fieldValue": "={{$json[\"company\"]}}"
+            },
+            {
+              "fieldName": "status",
+              "fieldValue": "sent"
+            }
+          ]
+        }
+      },
+      "id": "e9f8e7d6-5b4c-3d2e-0f1a-8bcd9efa6543",
+      "name": "Google Sheets - Log Email",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [1050, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "id": "f0a9b8c7-6c5d-4e3f-1a2b-9cde0fab7654",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "email-response",
+        "responseMode": "onReceived",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "id": "a1b2c3d4-7e6f-5d4c-3b2a-1cde2fab8765",
+      "name": "Webhook - Email Response",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [450, 500]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-4"
+            },
+            {
+              "name": "messages",
+              "value": [
+                {
+                  "role": "system",
+                  "content": "Analyze the email response and extract: 1) Interest level (high/medium/low/not interested), 2) Key objections or questions if any, 3) Next action required, 4) Demo requested (yes/no), 5) Best time for follow up, 6) Response sentiment (positive/neutral/negative). If no response received, analyze email engagement metrics (opened, clicked, etc.). Return as JSON."
+                },
+                {
+                  "role": "user",
+                  "content": "Email response: {{$json[\"email_response\"]}}\n\nEngagement metrics: Opened: {{$json[\"opened\"]}}, Clicked: {{$json[\"clicked\"]}}, Reply received: {{$json[\"replied\"]}}"
+                }
+              ]
+            },
+            {
+              "name": "temperature",
+              "value": 0.3
+            }
+          ]
+        }
+      },
+      "id": "b2c3d4e5-8f7a-6e5d-4c3b-2def3abc9876",
+      "name": "OpenAI - Analyze Email Response",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [650, 500]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "sheetId": "YOUR_GOOGLE_SHEET_ID",
+        "range": "Sheet1!G{{$json[\"row_number\"]}}:L{{$json[\"row_number\"]}}",
+        "dataMode": "autoMapInputData",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "email_status",
+              "fieldValue": "responded"
+            },
+            {
+              "fieldName": "interest_level",
+              "fieldValue": "={{$json[\"interest_level\"]}}"
+            },
+            {
+              "fieldName": "demo_requested",
+              "fieldValue": "={{$json[\"demo_requested\"]}}"
+            },
+            {
+              "fieldName": "next_action",
+              "fieldValue": "={{$json[\"next_action\"]}}"
+            },
+            {
+              "fieldName": "response_date",
+              "fieldValue": "={{new Date().toISOString()}}"
+            },
+            {
+              "fieldName": "response_sentiment",
+              "fieldValue": "={{$json[\"response_sentiment\"]}}"
+            }
+          ]
+        }
+      },
+      "id": "c3d4e5f6-9a8b-7f6e-5d4c-3efa4bcd0987",
+      "name": "Google Sheets - Update Status",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [850, 500],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"demo_requested\"]}}",
+              "operation": "equals",
+              "value2": "yes"
+            }
+          ]
+        }
+      },
+      "id": "d4e5f6a7-0b9c-8a7f-6e5d-4fab5cde1098",
+      "name": "IF - Demo Requested",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1050, 500]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "calendar": "primary",
+        "title": "TaxEva Demo - {{$json[\"prospect_name\"]}}",
+        "start": "={{$json[\"demo_date\"]}}",
+        "end": "={{DateTime.fromISO($json[\"demo_date\"]).plus({minutes: 30}).toISO()}}",
+        "description": "Demo call with {{$json[\"prospect_name\"]}} from {{$json[\"company\"]}}\n\nPhone: {{$json[\"phone_number\"]}}\nEmail: {{$json[\"email\"]}}\n\nNotes from initial call:\n{{$json[\"notes\"]}}",
+        "attendees": "={{$json[\"email\"]}}"
+      },
+      "id": "e5f6a7b8-1c0d-9b8a-7f6e-5abc6def21a9",
+      "name": "Google Calendar - Create Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1,
+      "position": [1250, 450],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "2",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "send",
+        "to": "={{$json[\"email\"]}}",
+        "subject": "Demo Request Received - Let's Schedule Your TaxEva Demo!",
+        "message": "<p>Dear {{$json[\"prospect_name\"]}},</p><p>Thank you for responding to our email and showing interest in TaxEva!</p><p>I'm excited to show you how our AI-powered platform can transform your CA practice. Based on your response, I'll schedule a personalized 15-minute demo.</p><p><strong>What we'll cover in the demo:</strong></p><ul><li>How TaxEva reduces operational time by 40%</li><li>Live demonstration of eliminating tab-switching</li><li>Automated solutions for your specific workflow challenges</li><li>Custom implementation strategy for your firm</li></ul><p>I'll be in touch shortly with available time slots, or feel free to reply with your preferred times.</p><p>Looking forward to showing you how TaxEva can revolutionize your practice!</p><p>Best regards,<br><strong>Raj Sharma</strong><br>Senior Business Development Executive<br>TaxEva - AI for CA Firms<br>📧 raj@taxeva.ai<br>📱 +91-98765-43210</p>",
+        "options": {
+          "htmlEmail": true
+        }
+      },
+      "id": "f6a7b8c9-2d1e-0c9b-8a7f-6bcd7efa32ba",
+      "name": "Gmail - Send Demo Interest Confirmation",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [1250, 550],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "interval": 30,
+        "unit": "minutes"
+      },
+      "id": "a7b8c9d0-3e2f-1d0c-9b8a-7cde8fab43cb",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 100]
+    },
+    {
+      "parameters": {
+        "workflowId": "={{$workflow.id}}"
+      },
+      "id": "b8c9d0e1-4f3a-2e1d-0c9b-8def9abc54dc",
+      "name": "Execute Workflow - Loop",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [1450, 300]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Get Prospects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Get Prospects": {
+      "main": [
+        [
+          {
+            "node": "Filter - Unsent Email Prospects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter - Unsent Email Prospects": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Send Initial Outreach",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Gmail - Send Initial Outreach": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Log Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Log Email": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow - Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Email Response": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Analyze Email Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - Analyze Email Response": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Update Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Update Status": {
+      "main": [
+        [
+          {
+            "node": "IF - Demo Requested",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Demo Requested": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar - Create Event",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gmail - Send Demo Interest Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Get Prospects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "errorWorkflow": "YOUR_ERROR_WORKFLOW_ID"
+  },
+  "staticData": null,
+  "pinData": {},
+  "versionId": "f3c4d5e6-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+  "triggerCount": 1,
+  "tags": [
+    {
+      "name": "AI Sales",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "name": "Gmail Integration",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "name": "TaxEva",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}
